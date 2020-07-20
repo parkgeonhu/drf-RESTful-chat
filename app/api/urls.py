@@ -12,7 +12,7 @@ urlpatterns = [
 	
 	# 로그인
 	path('auth/login', obtain_jwt_token),
-    path('auth/sign-up', UserRegisterView.as_view() ),
+    path('auth/sign-up', UserRegisterView.as_view(),  ),
     
     #토큰 갱신
     path('token/refresh', refresh_jwt_token),
