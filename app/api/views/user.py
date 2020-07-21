@@ -47,7 +47,7 @@ class UserRegisterView(generics.GenericAPIView):
     #     return self.partial_update(request, *args, **kwargs)
     
 
-class MyProfileView(generics.RetrieveAPIView):
+class MyProfileView(generics.RetrieveAPIView, generics.UpdateAPIView):
     serializer_class = ProfileSerializer
     permission_classes = (IsAuthenticated,)
     authentication_classes = [SessionAuthentication, BasicAuthentication, JSONWebTokenAuthentication]
@@ -56,4 +56,15 @@ class MyProfileView(generics.RetrieveAPIView):
         print(self)
         return User.objects.get(phone=self.request.user.phone)
     
-    
+    def patch(self, request, *args, **kwargs):
+        user=self.get_object()
+        serializer = self.get_serializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            try:
+                request.data['password']
+                user.set_password(request.data['password'])
+            except KeyError:
+                pass
+            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+        return JsonResponse("wrong parameters", status=status.HTTP_400_BAD_REQUEST)

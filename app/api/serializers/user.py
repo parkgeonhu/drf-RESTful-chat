@@ -14,4 +14,6 @@ class UserSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        exclude = ('password',)
+        fields = ('phone', 'nickname', 'uuid', 'password')
+        extra_kwargs = {'password': {'write_only': True}}
+        read_only_fields = ['phone', 'uuid']

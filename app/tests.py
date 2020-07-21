@@ -14,8 +14,17 @@ def default_user_data():
         "nickname" : "hello"
     }
 
+@pytest.fixture
+def default_user_patch_data():
+    return {
+        "phone": "1",
+        "password": "hello",
+        "nickname" : "test"
+    }
+
+
 @pytest.mark.django_db 
-def test_auth(api_client, default_user_data):
+def test_auth(api_client, default_user_data, default_user_patch_data):
     #회원가입
     response = api_client.post('/api/auth/sign-up', data=default_user_data)
     assert response.status_code == 201
@@ -31,3 +40,14 @@ def test_auth(api_client, default_user_data):
     response = api_client.get('/api/users/me')
     print(response.data)
     assert response.data['nickname']=='hello'
+    
+    #내 정보 수정
+    api_client.credentials(HTTP_AUTHORIZATION='JWT ' + token)
+    response = api_client.patch('/api/users/me', data=default_user_patch_data)
+    assert response.status_code == 201
+    
+    #내 정보 수정한 것의 닉네임이 같은지
+    api_client.credentials(HTTP_AUTHORIZATION='JWT ' + token)
+    response = api_client.get('/api/users/me')
+    assert response.data['nickname']=='test' #닉네임은 바뀌는 필드라는 것인 테스트코드
+    assert response.data['phone']!='1' #휴대폰 번호는 안 바뀌는 필드인 것인 테스트코드
