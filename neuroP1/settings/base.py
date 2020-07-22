@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Django settings for neuroP1 project.
 
@@ -12,45 +13,13 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os, json, datetime
 
-# """
-# pytest용 kakaotoken 불러오기 시작
-# """
-# secret_file = 'secrets.json' # secrets.json 파일 위치를 명시
-
-# def get_secret(setting, secrets):
-#     """비밀 변수를 가져오거나 명시적 예외를 반환한다."""
-#     try:
-#         return secrets[setting]
-#     except KeyError:
-#         error_msg = "Set the {} environment variable".format(setting)
-#         raise ImproperlyConfigured(error_msg)
-
-# try:
-#     with open(secret_file) as f:
-#         secrets = json.loads(f.read())
-#     KAKAO_TOKEN = get_secret("KAKAO_TOKEN", secrets)
-#     os.environ['kakaotoken']=KAKAO_TOKEN
-# except FileNotFoundError:
-#     pass
-
-# """
-# pytest용 kakaotoken 불러오기 끝 
-# """
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'q8xtw-_hsti+9t$(c97+2&d*#_@kt_4cy7avf74!*yiij-y1+*'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ["*"]
 
 AUTH_USER_MODEL = "app.User" 
 
@@ -66,7 +35,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'app',
-    'drf_yasg'
+    'drf_yasg',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
@@ -77,6 +47,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'neuroP1.urls'
@@ -99,18 +70,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'neuroP1.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/2.2/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
-
-
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
 
@@ -129,7 +88,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 REST_FRAMEWORK = {
     # 'DEFAULT_PERMISSION_CLASSES': (
     #     'rest_framework.permissions.IsAuthenticated',
@@ -140,15 +98,6 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
     ),
 }
-
-JWT_AUTH = {
-    'JWT_SECRET_KEY': SECRET_KEY,
-    'JWT_ALGORITHM': 'HS256',
-    'JWT_ALLOW_REFRESH': True,
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(days=7),
-    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=28),
-}
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
