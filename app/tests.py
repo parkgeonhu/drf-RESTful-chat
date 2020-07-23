@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import pytest
 from app.models import *
 from rest_framework.test import APIClient
