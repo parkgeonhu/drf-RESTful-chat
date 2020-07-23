@@ -16,3 +16,21 @@ class User(AbstractUser, ModelMixin):
 
     def __str__(self):
         return self.phone
+    
+    
+class Message(ModelMixin):
+    sender = models.ForeignKey(
+        User, related_name='messages', on_delete=models.CASCADE)
+    content = models.TextField()
+    
+    def __str__(self):
+        return f'{self.sender.nickname}@{self.content}'
+
+
+class ChatRoom(ModelMixin):
+    participants = models.ManyToManyField(
+        User, related_name='chats', blank=True)
+    messages = models.ManyToManyField(Message, blank=True)
+
+    def __str__(self):
+        return "{}".format(self.pk)

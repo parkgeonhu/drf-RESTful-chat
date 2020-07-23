@@ -2,6 +2,7 @@ from django.urls import re_path, path
 
 # from .views.auth import LoginView
 from .views.user import MyProfileView, UserRegisterView
+from .views.chatview import *
 
 from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token, verify_jwt_token
 
@@ -18,4 +19,8 @@ urlpatterns = [
     path('token/refresh', refresh_jwt_token),
     
     path('token/verify', verify_jwt_token),
+    
+    #chat history
+    path('chatrooms/<uuid:chatRoomUUID>/', MessageHistoryView.as_view()),
+    path('users/me/chatrooms', ChatListView.as_view()),
 ]
