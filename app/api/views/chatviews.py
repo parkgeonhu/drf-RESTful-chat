@@ -10,15 +10,26 @@ class ChatListView(generics.ListAPIView):
     serializer_class = ChatRoomSerializer
     permission_classes = (IsAuthenticated,)  
     authentication_classes = [SessionAuthentication, BasicAuthentication, JSONWebTokenAuthentication]
+    
     def get_queryset(self):
         user=self.request.user
         return ChatRoom.objects.filter(participants__phone=user.phone) 
 
 
-class MessageHistoryView(generics.ListAPIView):
+class ChatRoomView(generics.ListCreateAPIView):
     serializer_class = MessageSerializer
     permission_classes = (IsAuthenticated,)
     authentication_classes = [SessionAuthentication, BasicAuthentication, JSONWebTokenAuthentication]
+    
+    def perform_create(self, serializer):
+        data=self.request.data
+        content=data.get('content')
+        chatRoomUUID=self.kwargs['chatRoomUUID']
+    
+        sender=self.request.user
+        message = serializer.save(sender=sender, content=content)
+        chatRoom = ChatRoom.objects.get(uuid=chatRoomUUID)
+        chatRoom.messages.add(message)
     
     def get_queryset(self):
         chatRoomUUID=self.kwargs['chatRoomUUID']

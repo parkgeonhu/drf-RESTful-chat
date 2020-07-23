@@ -9,6 +9,9 @@ class MessageSerializer(serializers.ModelSerializer):
     
     senderNickname = serializers.SlugRelatedField(source='sender', slug_field='nickname', read_only=True)
     
+    def create(self, validated_data):
+        return Message.objects.create(**validated_data)
+    
     class Meta:
         model = Message
         fields = ['senderUUID','senderNickname','content']
