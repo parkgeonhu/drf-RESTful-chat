@@ -17,6 +17,14 @@ def default_user_data():
     }
 
 @pytest.fixture
+def another_user_data():
+    return {
+        "phone": "01065381788",
+        "password": "!ejrqo401",
+        "nickname" : "test2"
+    }
+
+@pytest.fixture
 def default_user_patch_data():
     return {
         "phone": "1",
@@ -25,7 +33,18 @@ def default_user_patch_data():
     }
 
 
-@pytest.mark.django_db 
+@pytest.fixture
+def chat_users(api_client, default_user_data, another_user_data):
+    response = api_client.post('/api/auth/sign-up', data=default_user_data)
+    response = api_client.post('/api/auth/sign-up', data=another_user_data)
+
+    
+# @pytest.fixture
+# def chatRoom():
+#     ChatRoom.objects.create()
+    
+
+@pytest.mark.django_db
 def test_auth(api_client, default_user_data, default_user_patch_data):
     #회원가입
     response = api_client.post('/api/auth/sign-up', data=default_user_data)
@@ -53,3 +72,15 @@ def test_auth(api_client, default_user_data, default_user_patch_data):
     response = api_client.get('/api/users/me')
     assert response.data['nickname']=='test' #닉네임은 바뀌는 필드라는 것인 테스트코드
     assert response.data['phone']!='1' #휴대폰 번호는 안 바뀌는 필드인 것인 테스트코드
+
+@pytest.mark.django_db
+def test_chat(api_client, default_user_data, chat_users):
+    response = api_client.post('/api/auth/login', data=default_user_data)
+    token=response.data['token'] #default_user의 토큰값
+    chatRoom=ChatRoom.objects.create()
+    #[TO-DO] 채팅방 생성 기준을 무엇으로 할 것인지. 메시지를 보낼 때 채팅방이 있으면 그곳으로 보내고, 없으면 만든다?
+    
+    
+    
+    print(token)
+    assert response.status_code == 200
