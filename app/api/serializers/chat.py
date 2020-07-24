@@ -14,7 +14,7 @@ class MessageSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Message
-        fields = ['senderUUID','senderNickname','content']
+        fields = ['senderUUID','senderNickname','content', 'created_at']
 
 class ChatRoomSerializer(serializers.ModelSerializer):
     

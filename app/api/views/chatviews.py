@@ -14,9 +14,45 @@ class ChatListView(generics.ListAPIView):
     def get_queryset(self):
         user=self.request.user
         return ChatRoom.objects.filter(participants__phone=user.phone) 
-
-
-class ChatRoomView(generics.ListCreateAPIView):
+    
+class ChatRoomCreateView(generics.ListAPIView, generics.CreateAPIView):
+    serializer_class = ChatRoomSerializer
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = [SessionAuthentication, BasicAuthentication, JSONWebTokenAuthentication]
+    
+    def get_queryset(self):
+        user=self.request.user
+        return ChatRoom.objects.filter(participants__phone=user.phone) 
+    
+    def perform_create(self, serializer):
+        data=self.request.data
+        chatRoom=serializer.save()
+        participants=data['participants']
+        
+        for participant in participants:
+            user = User.objects.get(uuid=participant)
+            print(user)
+            chatRoom.participants.add(user)
+        
+        chatRoom.participants.add(self.request.user)  
+        chatRoom.save()
+        
+        
+    
+class ChatRoomHistoryView(generics.ListAPIView):
+    serializer_class = MessageSerializer
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = [SessionAuthentication, BasicAuthentication, JSONWebTokenAuthentication]
+    
+    def get_queryset(self):
+        chatRoomUUID=self.kwargs['chatRoomUUID']
+        chatRoom=ChatRoom.objects.get(uuid=chatRoomUUID)
+        return chatRoom.messages
+    
+    
+class MessageView(generics.CreateAPIView):
+    
+    
     serializer_class = MessageSerializer
     permission_classes = (IsAuthenticated,)
     authentication_classes = [SessionAuthentication, BasicAuthentication, JSONWebTokenAuthentication]
@@ -24,14 +60,10 @@ class ChatRoomView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         data=self.request.data
         content=data.get('content')
-        chatRoomUUID=self.kwargs['chatRoomUUID']
-    
+        chatRoomUUID=data.get('chatRoomUUID')   
         sender=self.request.user
         message = serializer.save(sender=sender, content=content)
         chatRoom = ChatRoom.objects.get(uuid=chatRoomUUID)
         chatRoom.messages.add(message)
     
-    def get_queryset(self):
-        chatRoomUUID=self.kwargs['chatRoomUUID']
-        chatRoom=ChatRoom.objects.get(uuid=chatRoomUUID)
-        return chatRoom.messages
+    

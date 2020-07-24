@@ -17,6 +17,10 @@ class User(AbstractUser, ModelMixin):
     def __str__(self):
         return self.phone
     
+
+class Post(ModelMixin):
+    author = models.ForeignKey(
+        User, related_name='posts', on_delete=models.CASCADE)
     
 class Message(ModelMixin):
     sender = models.ForeignKey(
