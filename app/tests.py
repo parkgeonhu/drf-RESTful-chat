@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import pytest
+import pytest, json
 from app.models import *
 from rest_framework.test import APIClient
 
@@ -33,15 +33,12 @@ def default_user_patch_data():
     }
 
 
+#chat user를 db에 주입
 @pytest.fixture
 def chat_users(api_client, default_user_data, another_user_data):
     response = api_client.post('/api/auth/sign-up', data=default_user_data)
     response = api_client.post('/api/auth/sign-up', data=another_user_data)
 
-    
-# @pytest.fixture
-# def chatRoom():
-#     ChatRoom.objects.create()
     
 
 @pytest.mark.django_db
@@ -74,13 +71,40 @@ def test_auth(api_client, default_user_data, default_user_patch_data):
     assert response.data['phone']!='1' #휴대폰 번호는 안 바뀌는 필드인 것인 테스트코드
 
 @pytest.mark.django_db
-def test_chat(api_client, default_user_data, chat_users):
+def test_chat(api_client, default_user_data, another_user_data, chat_users):
+    #default user의 토큰 가져오기
     response = api_client.post('/api/auth/login', data=default_user_data)
-    token=response.data['token'] #default_user의 토큰값
-    chatRoom=ChatRoom.objects.create()
-    #[TO-DO] 채팅방 생성 기준을 무엇으로 할 것인지. 메시지를 보낼 때 채팅방이 있으면 그곳으로 보내고, 없으면 만든다?
+    token = response.data['token']
+
+    #another user의 토큰 가져오기
+    participant = User.objects.get(phone=another_user_data['phone'])
+    participantUUID = participant.uuid
+    print(participantUUID)
+    api_client.credentials(HTTP_AUTHORIZATION='JWT ' + token)
     
+    participants = []
+    participants.append(str(participantUUID))
+    print(participants)
+    chatroom_data={
+        "participants" : participants
+    }
+    print(chatroom_data)
     
+    #채팅방의 uuid를 알아내자
+    response = api_client.post('/api/chatrooms', data=chatroom_data, format='json')
+    assert response.status_code==201
+    chatRoomUUID = response.data['uuid']
     
-    print(token)
+    #채팅방의 uuid를 알아냈으면 메시지를 보낼 준비를 하자
+    message_data={
+        "chatRoomUUID" : chatRoomUUID,
+        "content" : "안녕하세요"
+    }
+    
+    response = api_client.post('/api/messages', data=message_data)
+    assert response.status_code==201
+    
+    #채팅방에 메시지가 잘 갔는지 확인해보자
+    response = api_client.get('/api/chatrooms/' + chatRoomUUID)
     assert response.status_code == 200
+    assert response.data[0]['content'] == "안녕하세요"

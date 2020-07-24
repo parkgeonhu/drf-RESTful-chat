@@ -14,7 +14,8 @@ class ChatListView(generics.ListAPIView):
     def get_queryset(self):
         user=self.request.user
         return ChatRoom.objects.filter(participants__phone=user.phone) 
-    
+
+
 class ChatRoomCreateView(generics.ListAPIView, generics.CreateAPIView):
     serializer_class = ChatRoomSerializer
     permission_classes = (IsAuthenticated,)
@@ -27,18 +28,18 @@ class ChatRoomCreateView(generics.ListAPIView, generics.CreateAPIView):
     def perform_create(self, serializer):
         data=self.request.data
         chatRoom=serializer.save()
-        participants=data['participants']
-        
+        print(data)
+        participants=data.get('participants')
+        print(participants)
         for participant in participants:
             user = User.objects.get(uuid=participant)
-            print(user)
+            #print(user)
             chatRoom.participants.add(user)
         
         chatRoom.participants.add(self.request.user)  
         chatRoom.save()
         
         
-    
 class ChatRoomHistoryView(generics.ListAPIView):
     serializer_class = MessageSerializer
     permission_classes = (IsAuthenticated,)
@@ -51,8 +52,6 @@ class ChatRoomHistoryView(generics.ListAPIView):
     
     
 class MessageView(generics.CreateAPIView):
-    
-    
     serializer_class = MessageSerializer
     permission_classes = (IsAuthenticated,)
     authentication_classes = [SessionAuthentication, BasicAuthentication, JSONWebTokenAuthentication]
@@ -65,5 +64,3 @@ class MessageView(generics.CreateAPIView):
         message = serializer.save(sender=sender, content=content)
         chatRoom = ChatRoom.objects.get(uuid=chatRoomUUID)
         chatRoom.messages.add(message)
-    
-    
