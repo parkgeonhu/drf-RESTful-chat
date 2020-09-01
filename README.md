@@ -1,6 +1,6 @@
-# Neuro P1 : 보돈
+# drf-RESTful-chat
 
-# 1. 보돈
+# 1. 채팅
 
 ## 1.1 기능
 
